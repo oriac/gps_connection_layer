@@ -10,8 +10,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 
@@ -28,78 +30,77 @@ class ClicMetaData {
 	private static final String SCREENSHOT = "urlScreenShot";
 	private static final String CLIC = "urlClic";
 	
-	private String Subject;
-	private String Author;
-	private String License;
-	private int Theme;
-	private String Language;
-	private String[] Keywords;
-	private File Icon;
-	private File ScreenShot;
-	private File Clic;
+	private String subject;
+	private String author;
+	private String license;
+	private int theme;
+	private String language;
+	private String[] keywords;
+	private File icon;
+	private File screenShot;
+	private File clic;
 	
 	public static void main(String[] args) throws URISyntaxException, ParserConfigurationException, SAXException, IOException{
 		URI uri = new URI("http://dl.dropbox.com/u/14187788/clic7.xmlclic");
 		ClicMetaData clic = new ClicMetaData(uri);
 	}
 	
-	public ClicMetaData(URI xmlUri) throws ParserConfigurationException, SAXException, IOException{
+	public ClicMetaData(URI xmlUri) throws ParserConfigurationException, SAXException, IOException, DOMException, URISyntaxException{
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		Document clicMetaData = builder.parse(xmlUri.toString());
 		
-		Node n = clicMetaData.getElementsByTagName("clicDescriptor").item(0);
+		//String attributes
+		subject = clicMetaData.getElementsByTagName(SUBJECT).item(0).getFirstChild().getNodeValue();
+		author = clicMetaData.getElementsByTagName(AUTHOR).item(0).getFirstChild().getNodeValue();
+		license = clicMetaData.getElementsByTagName(LICENCE).item(0).getFirstChild().getNodeValue();
+		theme = Integer.parseInt(clicMetaData.getElementsByTagName(THEME).item(0).getFirstChild().getNodeValue());
+		language = clicMetaData.getElementsByTagName(LANGUAGE).item(0).getFirstChild().getNodeValue();
+		//File attributes, doesn't work, urls are down
+		//icon = new File(new URI(clicMetaData.getElementsByTagName(ICON).item(0).getFirstChild().getNodeValue()));
+		//screenShot = new File(new URI(clicMetaData.getElementsByTagName(SCREENSHOT).item(0).getFirstChild().getNodeValue()));
+		
+		/*
+		keywords = clicMetaData.getElementsByTagName(KEYWORDS).item(0).getFirstChild().getNodeValue();
+		clic = clicMetaData.getElementsByTagName(CLIC).item(0).getFirstChild().getNodeValue();*/
+		
 		System.out.println("fin");
-	}
-	
-	private ClicMetaData(String subject, String author, String license,
-			int theme, String language, String[] keywords, URL iconUrl,
-			URL screenShotUrl, File clic) throws URISyntaxException {
-		Subject = subject;
-		Author = author;
-		License = license;
-		Theme = theme;
-		Language = language;
-		Keywords = keywords;
-		Icon = new File(iconUrl.toURI());
-		ScreenShot = new File(screenShotUrl.toURI());
-		Clic = clic;
 	}
 
 	public String getSubject() {
-		return Subject;
+		return subject;
 	}
 
 	public String getAuthor() {
-		return Author;
+		return author;
 	}
 
 	public String getLicense() {
-		return License;
+		return license;
 	}
 
 	public int getTheme() {
-		return Theme;
+		return theme;
 	}
 
 	public String getLanguage() {
-		return Language;
+		return language;
 	}
 
 	public String[] getKeywords() {
-		return Keywords;
+		return keywords;
 	}
 
 	public File getIcon() {
-		return Icon;
+		return icon;
 	}
 
 	public File getScreenShot() {
-		return ScreenShot;
+		return screenShot;
 	}
 
 	public File getClic() {
-		return Clic;
+		return clic;
 	}
-	
+
 	
 }
