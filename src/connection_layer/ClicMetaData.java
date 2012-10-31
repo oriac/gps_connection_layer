@@ -1,9 +1,7 @@
 package connection_layer;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -12,22 +10,25 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-
-
+/**
+ * The ClicMetaData class represents a Clic with all it's metadata
+ * as it's stored on the server.  
+ * @author Albert Cabré Juan
+ */
 class ClicMetaData {
 	
+	//definition for the xml tags
 	private static final String SUBJECT = "Subject";
 	private static final String AUTHOR = "Author";
 	private static final String LICENCE = "License";
 	private static final String THEME = "Theme";
 	private static final String LANGUAGE = "Language";
-	private static final String KEYWORDS = "Keywords";
+	private static final String KEYWORD = "keyWord";
 	private static final String ICON = "urlIcon";
-	private static final String SCREENSHOT = "urlScreenShot";
+	private static final String SCREENSHOT = "urlScreenshot";
 	private static final String CLIC = "urlClic";
 	
 	private String subject;
@@ -36,18 +37,25 @@ class ClicMetaData {
 	private int theme;
 	private String language;
 	private String[] keywords;
-	private File icon;
-	private File screenShot;
-	private File clic;
+	private byte[] icon;
+	private byte[] screenShot;
+	private byte[] clic;
 	
-	public static void main(String[] args) throws URISyntaxException, ParserConfigurationException, SAXException, IOException{
-		URI uri = new URI("http://dl.dropbox.com/u/14187788/clic7.xmlclic");
-		ClicMetaData clic = new ClicMetaData(uri);
-	}
-	
-	public ClicMetaData(URI xmlUri) throws ParserConfigurationException, SAXException, IOException, DOMException, URISyntaxException{
+	/**
+	 * Creates an instance of a ClicMetaData based on a XML
+	 * representation of the Clic and it's metadata.
+	 * @param xmlURL URL for the XML
+	 * @throws ParserConfigurationException Should never be thrown.
+	 * @throws SAXException The file reached is not valid XML
+	 * @throws IOException Thrown when connectivity problems appear.
+	 * @throws DOMException The XML format was unexpected (ex:missing attributes)
+	 * @throws UnknownHostException Unchecked exception, it's thrown
+	 *	   	   when there's no Internet at all (DNS servers unreachable).
+	 */
+	public ClicMetaData(URL xmlURL) throws ParserConfigurationException, SAXException, IOException, DOMException{
+		
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document clicMetaData = builder.parse(xmlUri.toString());
+		Document clicMetaData = builder.parse(new ByteArrayInputStream(Downloader.downloadFile(xmlURL)));
 		
 		//String attributes
 		subject = clicMetaData.getElementsByTagName(SUBJECT).item(0).getFirstChild().getNodeValue();
@@ -55,17 +63,28 @@ class ClicMetaData {
 		license = clicMetaData.getElementsByTagName(LICENCE).item(0).getFirstChild().getNodeValue();
 		theme = Integer.parseInt(clicMetaData.getElementsByTagName(THEME).item(0).getFirstChild().getNodeValue());
 		language = clicMetaData.getElementsByTagName(LANGUAGE).item(0).getFirstChild().getNodeValue();
-		//File attributes, doesn't work, urls are down
-		//icon = new File(new URI(clicMetaData.getElementsByTagName(ICON).item(0).getFirstChild().getNodeValue()));
-		//screenShot = new File(new URI(clicMetaData.getElementsByTagName(SCREENSHOT).item(0).getFirstChild().getNodeValue()));
 		
-		/*
-		keywords = clicMetaData.getElementsByTagName(KEYWORDS).item(0).getFirstChild().getNodeValue();
-		clic = clicMetaData.getElementsByTagName(CLIC).item(0).getFirstChild().getNodeValue();*/
+		//File attributes, don't work at moment, urls on the xmlclic are down
+		icon = Downloader.downloadFile(new URL(clicMetaData.getElementsByTagName(ICON).item(0).getFirstChild().getNodeValue()));
+		screenShot = Downloader.downloadFile(new URL(clicMetaData.getElementsByTagName(SCREENSHOT).item(0).getFirstChild().getNodeValue()));
 		
-		System.out.println("fin");
+		//keywords list
+		NodeList nodes = clicMetaData.getElementsByTagName(KEYWORD);
+		keywords = new String[nodes.getLength()];
+		
+		for (int i = 0; i<keywords.length ; i++){
+			keywords[i]=nodes.item(i).getFirstChild().getNodeValue();
+		}
+	
+		// the click itself, doesn't work either, the sushitos copy is private (needs login) 
+		//clic = clicMetaData.getElementsByTagName(CLIC).item(0).getFirstChild().getNodeValue();	
+		
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public String getSubject() {
 		return subject;
 	}
@@ -90,15 +109,15 @@ class ClicMetaData {
 		return keywords;
 	}
 
-	public File getIcon() {
+	public byte[] getIcon() {
 		return icon;
 	}
 
-	public File getScreenShot() {
+	public byte[] getScreenShot() {
 		return screenShot;
 	}
 
-	public File getClic() {
+	public byte[] getClic() {
 		return clic;
 	}
 
