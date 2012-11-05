@@ -1,6 +1,6 @@
 package connection_layer;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -37,9 +37,9 @@ class ClicMetaData {
 	private int theme;
 	private String language;
 	private String[] keywords;
-	private byte[] icon;
-	private byte[] screenShot;
-	private byte[] clic;
+	private URL icon;
+	private URL screenShot;
+	private URL clic;
 	
 	/**
 	 * Creates an instance of a ClicMetaData based on a XML
@@ -55,8 +55,9 @@ class ClicMetaData {
 	public ClicMetaData(URL xmlURL) throws ParserConfigurationException, SAXException, IOException, DOMException{
 		
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document clicMetaData = builder.parse(new ByteArrayInputStream(Downloader.downloadFile(xmlURL)));
-		
+		//Document clicMetaData = builder.parse(new ByteArrayInputStream(Downloader.downloadFile(xmlURL)));
+		Document clicMetaData = builder.parse(new File("C:\\Users\\Albert\\Documents\\My Dropbox\\Public\\clic7.xmlclic"));
+
 		//String attributes
 		subject = clicMetaData.getElementsByTagName(SUBJECT).item(0).getFirstChild().getNodeValue();
 		author = clicMetaData.getElementsByTagName(AUTHOR).item(0).getFirstChild().getNodeValue();
@@ -64,9 +65,10 @@ class ClicMetaData {
 		theme = Integer.parseInt(clicMetaData.getElementsByTagName(THEME).item(0).getFirstChild().getNodeValue());
 		language = clicMetaData.getElementsByTagName(LANGUAGE).item(0).getFirstChild().getNodeValue();
 		
-		//File attributes, don't work at moment, urls on the xmlclic are down
-		icon = Downloader.downloadFile(new URL(clicMetaData.getElementsByTagName(ICON).item(0).getFirstChild().getNodeValue()));
-		screenShot = Downloader.downloadFile(new URL(clicMetaData.getElementsByTagName(SCREENSHOT).item(0).getFirstChild().getNodeValue()));
+		//File attributes, only the URL is stored for later lazy downloading
+		icon = new URL(clicMetaData.getElementsByTagName(ICON).item(0).getFirstChild().getNodeValue());
+		screenShot = new URL(clicMetaData.getElementsByTagName(SCREENSHOT).item(0).getFirstChild().getNodeValue());
+		clic = new URL(clicMetaData.getElementsByTagName(CLIC).item(0).getFirstChild().getNodeValue());	
 		
 		//keywords list
 		NodeList nodes = clicMetaData.getElementsByTagName(KEYWORD);
@@ -75,16 +77,9 @@ class ClicMetaData {
 		for (int i = 0; i<keywords.length ; i++){
 			keywords[i]=nodes.item(i).getFirstChild().getNodeValue();
 		}
-	
-		// the click itself, doesn't work either, the sushitos copy is private (needs login) 
-		//clic = clicMetaData.getElementsByTagName(CLIC).item(0).getFirstChild().getNodeValue();	
 		
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public String getSubject() {
 		return subject;
 	}
@@ -109,17 +104,31 @@ class ClicMetaData {
 		return keywords;
 	}
 
-	public byte[] getIcon() {
-		return icon;
+	/**
+	 * Downloads and returns the icon.
+	 * @return The icon in a byte array
+	 * @throws IOException Connectivity problems
+	 */
+	public byte[] getIcon() throws IOException {
+		return Downloader.downloadFile(icon);
 	}
-
-	public byte[] getScreenShot() {
-		return screenShot;
-	}
-
-	public byte[] getClic() {
-		return clic;
-	}
-
 	
+	/**
+	 * Downloads and returns the screenshot.
+	 * @return The screenshot in a byte array
+	 * @throws IOException Connectivity problems
+	 */
+	public byte[] getScreenShot() throws IOException{
+		return Downloader.downloadFile(screenShot);
+	}
+
+	/**
+	 * Downloads and returns the clic.
+	 * @return The clic in a byte array
+	 * @throws IOException Connectivity problems
+	 */
+	public byte[] getClic() throws IOException{
+		return Downloader.downloadFile(clic);
+	}
+
 }

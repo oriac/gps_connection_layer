@@ -5,8 +5,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-
+/**
+ * The Downloader class contains the code that directly
+ * 	manages the connection with the server.
+ * @author Albert Cabré Juan
+ */
 final class Downloader {
+	
+	/**
+	 * Gets whatever resource there is at the provided URL
+	 * and returns it in a byte array.
+	 * @param url The URL where the resource is located.
+	 * @return A byte array that contains the downloaded resource
+	 * @throws IOException Connectivity problems
+	 */
 	static byte[] downloadFile(URL url) throws IOException {
 		InputStream in = new BufferedInputStream(url.openStream());
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
